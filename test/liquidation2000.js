@@ -3,8 +3,8 @@ const { network, ethers } = require("hardhat");
 const { BigNumber, utils }  = require("ethers");
 const { writeFile } = require('fs');
 
-describe("Liquidation", function () {
-  it("test", async function () {
+describe("Liquidation 2000", function () {
+  it("flash loan with 2000 USDT", async function () {
     await network.provider.request({
         method: "hardhat_reset",
         params: [{
@@ -16,6 +16,8 @@ describe("Liquidation", function () {
       });
     
     const gasPrice = 0;
+    //debt_USDT 2000
+    const debt_USDT = ethers.utils.parseUnits("2000", 6);
 
     const accounts = await ethers.getSigners();
     const liquidator = accounts[0].address;
@@ -29,7 +31,7 @@ describe("Liquidation", function () {
     const liquidationOperator = await LiquidationOperator.deploy(overrides = {gasPrice: gasPrice});
     await liquidationOperator.deployed();
 
-    const liquidationTx = await liquidationOperator.operate(overrides = {gasPrice: gasPrice});
+    const liquidationTx = await liquidationOperator.operate(debt_USDT, (overrides = {gasPrice: gasPrice}));
     const liquidationReceipt = await liquidationTx.wait();
 
     const liquidationEvents = liquidationReceipt.logs.filter(
@@ -50,6 +52,6 @@ describe("Liquidation", function () {
     console.log("Profit", utils.formatEther(profit), "ETH");
 
     expect(profit.gt(BigNumber.from(0)), "not profitable").to.be.true;
-    writeFile('profit.txt', String(utils.formatEther(profit)), function (err) {console.log("failed to write profit.txt: %s", err)});
+    // writeFile('profit.txt', String(utils.formatEther(profit)), function (err) {console.log("failed to write profit.txt: %s", err)});
   });
 });
